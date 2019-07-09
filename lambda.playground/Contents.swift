@@ -32,6 +32,7 @@ typealias ThreeArgF = (Function) -> (Function) -> (Function) -> Function
 
 let IFTHENELSE: ThreeArgF   = { test in { x in { y in test.eval(x).eval(y) } } }
 let AND: TwoArgF            = { x in { y in x.eval(y).eval(x) } }
+let OR: TwoArgF             = { x in { y in x.eval(x).eval(y) } }
 
 assertTrue("identity", IDENTITY)
 assertTrue("true", TRUE)
@@ -45,6 +46,10 @@ assertFalse("and (T F)", AND(TRUE)(FALSE))
 assertFalse("and (F T)", AND(FALSE)(TRUE))
 assertFalse("and (F F)", AND(FALSE)(FALSE))
 
-print("[ ] or")
+assertTrue("or (T T)", OR(TRUE)(TRUE))
+assertTrue("or (T F)", OR(TRUE)(FALSE))
+assertTrue("or (F T)", OR(FALSE)(TRUE))
+assertFalse("or (F F)", OR(FALSE)(FALSE))
+
 print("[ ] xor")
 print("[ ] not")
