@@ -1,50 +1,31 @@
-protocol Function {
-    associatedtype Argument
-    associatedtype Return
-    func eval(_ arg: Argument) -> Return
+enum EFunction {
+    case none
+    case literal(String)
+    case function((EFunction) -> (EFunction))
+
+    func eval() -> EFunction {
+        return eval(.none)
+    }
+
+    func eval(_ arg: EFunction) -> EFunction {
+        switch(self) {
+        case .function(let function): return function(arg)
+        case .literal(let literalString): print(literalString); return .none
+        default: return .none
+        }
+    }
 }
 
-class FunctionImpl<A, R>: Function {
-    private let evaluation: (A) -> R
-    init(_ evaluation: @escaping (A) -> R) { self.evaluation = evaluation }
-    func eval(_ arg: A) -> R { return evaluation(arg) }
-}
+let assertTrue = { (id: String, statement: EFunction) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
+let assertFalse = { (id: String, statement: EFunction) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
 
-class StringLiteral: FunctionImpl<Any, String> {
-    init(_ value: String) { super.init { (_) in value } }
-    func eval() -> String { return eval(()) }
-}
+let identity = { EFunction.function { $0 } }
+let truth = { EFunction.function { x in EFunction.function { _ in x } } }
+let falsy = { EFunction.function { _ in EFunction.function { y in y } } }
 
-class Identity<A>: FunctionImpl<A, A> where A: Function {
-    init() { super.init { (arg) in arg } }
-}
-
-class True<A, B>: FunctionImpl<A, FunctionImpl<B, A>> where A: Function, B: Function {
-    init() { super.init { (x) in FunctionImpl<B, A> { (y) in x } } }
-}
-
-class False<A, B>: FunctionImpl<A, FunctionImpl<B, B>> where A: Function, B: Function {
-    init() { super.init { (x) in FunctionImpl<B, B> { (y) in y } } }
-}
-
-func identity<A>(_ first: A) -> A where A: Function {
-    return Identity<A>().eval(first)
-}
-
-func truth<A, B>(_ first: A, _ second: B) -> A where A: Function, B: Function {
-    return True<A, B>().eval(first).eval(second)
-}
-
-func falsy<A, B>(_ first: A, _ second: B) -> B where A: Function, B: Function {
-    return False<A, B>().eval(first).eval(second)
-}
-
-let pass = StringLiteral("√")
-let fail = StringLiteral("X")
-
-print("[\(identity(pass).eval())] identity")
-print("[\(truth(pass, fail).eval())] true")
-print("[\(falsy(fail, pass).eval())] false")
+assertTrue("identity", identity())
+assertTrue("true", truth())
+assertFalse("false", falsy())
 print("[ ] if then else")
 print("[ ] and")
 print("[ ] or")
