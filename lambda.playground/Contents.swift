@@ -38,6 +38,7 @@ let NOT: OneArgF            = { x in x.eval(FALSE).eval(TRUE) }
 let XOR: TwoArgF            = { x in { y in x.eval(NOT(y)).eval(y) } }
 
 assertTrue("identity", IDENTITY)
+
 assertTrue("true", TRUE)
 assertFalse("false", FALSE)
 
@@ -61,3 +62,24 @@ assertFalse("xor (T T)", XOR(TRUE)(TRUE))
 assertTrue("xor (T F)", XOR(TRUE)(FALSE))
 assertTrue("xor (F T)", XOR(FALSE)(TRUE))
 assertFalse("xor (F F)", XOR(FALSE)(FALSE))
+
+print("-----------------")
+
+/*
+ PEANO AXIOMS
+ 1. 0 is a natural number
+ 2. For every natural number x, x = x
+ 3. For all natural numbers x and y, if x = y, then y = x
+ 4. For all natural numbers x, y and z, if x = y and y = z, then x = z
+ 5. For all a and b. if b is a natural number and a = b, then a is also a natural number
+ 6. For every natural number n, S(n) is a natural number
+ 7. For all natural numbers m and n, m = n if and only if S(m) = S(n)
+ 8. For every natural number n, S(n) = 0 is false. That is no natural number whose successor is 0.
+ */
+
+let ZERO = TRUE
+let IS_NATURAL: OneArgF = { $0 }
+
+assertTrue("zero", ZERO)
+assertTrue("zero is natural", IS_NATURAL(ZERO))
+
