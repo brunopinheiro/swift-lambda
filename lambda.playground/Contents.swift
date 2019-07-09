@@ -35,6 +35,7 @@ let IFTHENELSE: ThreeArgF   = { test in { x in { y in test.eval(x).eval(y) } } }
 let AND: TwoArgF            = { x in { y in x.eval(y).eval(x) } }
 let OR: TwoArgF             = { x in { y in x.eval(x).eval(y) } }
 let NOT: OneArgF            = { x in x.eval(FALSE).eval(TRUE) }
+let XOR: TwoArgF            = { x in { y in x.eval(NOT(y)).eval(y) } }
 
 assertTrue("identity", IDENTITY)
 assertTrue("true", TRUE)
@@ -56,4 +57,7 @@ assertFalse("or (F F)", OR(FALSE)(FALSE))
 assertFalse("not (T)", NOT(TRUE))
 assertTrue("not (F)", NOT(FALSE))
 
-print("[ ] xor")
+assertFalse("xor (T T)", XOR(TRUE)(TRUE))
+assertTrue("xor (T F)", XOR(TRUE)(FALSE))
+assertTrue("xor (F T)", XOR(FALSE)(TRUE))
+assertFalse("xor (F F)", XOR(FALSE)(FALSE))
