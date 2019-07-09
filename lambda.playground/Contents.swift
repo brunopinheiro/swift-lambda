@@ -27,12 +27,14 @@ let IDENTITY    = Function.function { $0 }
 let TRUE        = Function.function { x in .function { _ in x } }
 let FALSE       = Function.function { _ in .function { y in y } }
 
+typealias OneArgF   = (Function) -> Function
 typealias TwoArgF   = (Function) -> (Function) -> Function
 typealias ThreeArgF = (Function) -> (Function) -> (Function) -> Function
 
 let IFTHENELSE: ThreeArgF   = { test in { x in { y in test.eval(x).eval(y) } } }
 let AND: TwoArgF            = { x in { y in x.eval(y).eval(x) } }
 let OR: TwoArgF             = { x in { y in x.eval(x).eval(y) } }
+let NOT: OneArgF            = { x in x.eval(FALSE).eval(TRUE) }
 
 assertTrue("identity", IDENTITY)
 assertTrue("true", TRUE)
@@ -51,5 +53,7 @@ assertTrue("or (T F)", OR(TRUE)(FALSE))
 assertTrue("or (F T)", OR(FALSE)(TRUE))
 assertFalse("or (F F)", OR(FALSE)(FALSE))
 
+assertFalse("not (T)", NOT(TRUE))
+assertTrue("not (F)", NOT(FALSE))
+
 print("[ ] xor")
-print("[ ] not")
