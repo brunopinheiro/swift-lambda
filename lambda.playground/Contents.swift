@@ -1,13 +1,15 @@
-enum EFunction {
+enum Function {
     case none
     case literal(String)
-    case function((EFunction) -> (EFunction))
+    case function((Function) -> (Function))
 
-    func eval() -> EFunction {
+    @discardableResult
+    func eval() -> Function {
         return eval(.none)
     }
 
-    func eval(_ arg: EFunction) -> EFunction {
+    @discardableResult
+    func eval(_ arg: Function) -> Function {
         switch(self) {
         case .function(let function): return function(arg)
         case .literal(let literalString): print(literalString); return .none
@@ -16,26 +18,32 @@ enum EFunction {
     }
 }
 
-let assertTrue = { (id: String, statement: EFunction) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
-let assertFalse = { (id: String, statement: EFunction) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
+typealias Assertion = (String, Function) -> Void
 
-let identity = { EFunction.function { $0 } }
-let truth = { EFunction.function { x in EFunction.function { _ in x } } }
-let falsy = { EFunction.function { _ in EFunction.function { y in y } } }
-let ifThenElse = { (test: EFunction, x: EFunction, y: EFunction) in test.eval(x).eval(y) }
-let and = { (x: EFunction, y: EFunction) in x.eval(y).eval(x) }
+let assertTrue: Assertion   = { (id, statement) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
+let assertFalse: Assertion  = { (id, statement) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
 
-assertTrue("identity", identity())
-assertTrue("true", truth())
-assertFalse("false", falsy())
+let IDENTITY    = Function.function { $0 }
+let TRUE        = Function.function { x in .function { _ in x } }
+let FALSE       = Function.function { _ in .function { y in y } }
 
-assertTrue("if then else (true)", ifThenElse(truth(), truth(), falsy()))
-assertFalse("if then else (false)", ifThenElse(falsy(), truth(), falsy()))
+typealias TwoArgF   = (Function) -> (Function) -> Function
+typealias ThreeArgF = (Function) -> (Function) -> (Function) -> Function
 
-assertTrue("and (true && true)", and(truth(), truth()))
-assertFalse("and (true && false)", and(truth(), falsy()))
-assertFalse("and (false && true)", and(falsy(), truth()))
-assertFalse("and (false && false)", and(falsy(), falsy()))
+let IFTHENELSE: ThreeArgF   = { test in { x in { y in test.eval(x).eval(y) } } }
+let AND: TwoArgF            = { x in { y in x.eval(y).eval(x) } }
+
+assertTrue("identity", IDENTITY)
+assertTrue("true", TRUE)
+assertFalse("false", FALSE)
+
+assertTrue("if then else (T)", IFTHENELSE(TRUE)(TRUE)(FALSE))
+assertFalse("if then else (F)", IFTHENELSE(FALSE)(TRUE)(FALSE))
+
+assertTrue("and (T T)", AND(TRUE)(TRUE))
+assertFalse("and (T F)", AND(TRUE)(FALSE))
+assertFalse("and (F T)", AND(FALSE)(FALSE))
+assertFalse("and (F F)", AND(FALSE)(FALSE))
 
 print("[ ] or")
 print("[ ] xor")
