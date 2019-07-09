@@ -42,7 +42,7 @@ assertFalse("if then else (F)", IFTHENELSE(FALSE)(TRUE)(FALSE))
 
 assertTrue("and (T T)", AND(TRUE)(TRUE))
 assertFalse("and (T F)", AND(TRUE)(FALSE))
-assertFalse("and (F T)", AND(FALSE)(FALSE))
+assertFalse("and (F T)", AND(FALSE)(TRUE))
 assertFalse("and (F F)", AND(FALSE)(FALSE))
 
 print("[ ] or")
