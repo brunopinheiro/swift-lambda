@@ -22,12 +22,21 @@ let assertFalse = { (id: String, statement: EFunction) in statement.eval(.litera
 let identity = { EFunction.function { $0 } }
 let truth = { EFunction.function { x in EFunction.function { _ in x } } }
 let falsy = { EFunction.function { _ in EFunction.function { y in y } } }
+let ifThenElse = { (test: EFunction, x: EFunction, y: EFunction) in test.eval(x).eval(y) }
+let and = { (x: EFunction, y: EFunction) in x.eval(y).eval(x) }
 
 assertTrue("identity", identity())
 assertTrue("true", truth())
 assertFalse("false", falsy())
-print("[ ] if then else")
-print("[ ] and")
+
+assertTrue("if then else (true)", ifThenElse(truth(), truth(), falsy()))
+assertFalse("if then else (false)", ifThenElse(falsy(), truth(), falsy()))
+
+assertTrue("and (true && true)", and(truth(), truth()))
+assertFalse("and (true && false)", and(truth(), falsy()))
+assertFalse("and (false && true)", and(falsy(), truth()))
+assertFalse("and (false && false)", and(falsy(), falsy()))
+
 print("[ ] or")
 print("[ ] xor")
 print("[ ] not")
