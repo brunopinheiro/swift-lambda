@@ -19,31 +19,31 @@ enum Function {
 }
 
 typealias Assertion = (String, Function) -> Void
-
-let ASSERT: Assertion  = { (id, statement) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
-let REFUTE: Assertion  = { (id, statement) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
-
-let IDENTITY    = Function.function { $0 }
-let TRUE        = Function.function { x in .function { _ in x } }
-let FALSE       = Function.function { _ in .function { y in y } }
-
 typealias OneArgF   = (Function) -> Function
 typealias TwoArgF   = (Function) -> (Function) -> Function
 typealias ThreeArgF = (Function) -> (Function) -> (Function) -> Function
 
+let ASSERT: Assertion  = { (id, statement) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
+let REFUTE: Assertion  = { (id, statement) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
+
+let IDENTITY:   Function  = .function { $0 }
+let TRUE:       Function  = .function { x in .function { _ in x } }
+let FALSE:      Function  = .function { _ in .function { y in y } }
+
 let IFTHENELSE: ThreeArgF   = { test in { x in { y in test.eval(x).eval(y) } } }
-let AND: TwoArgF            = { x in { y in x.eval(y).eval(x) } }
-let OR: TwoArgF             = { x in { y in x.eval(x).eval(y) } }
-let NOT: OneArgF            = { x in x.eval(FALSE).eval(TRUE) }
-let XOR: TwoArgF            = { x in { y in x.eval(NOT(y)).eval(y) } }
+let AND:        TwoArgF     = { x in { y in x.eval(y).eval(x) } }
+let OR:         TwoArgF     = { x in { y in x.eval(x).eval(y) } }
+let NOT:        OneArgF     = { x in x.eval(FALSE).eval(TRUE) }
+let XOR:        TwoArgF     = { x in { y in x.eval(NOT(y)).eval(y) } }
+
 
 ASSERT("identity", IDENTITY)
 
 ASSERT("true", TRUE)
 REFUTE("false", FALSE)
 
-ASSERT("if then else (T)", IFTHENELSE(TRUE)(TRUE)(FALSE))
-REFUTE("if then else (F)", IFTHENELSE(FALSE)(TRUE)(FALSE))
+ASSERT("if (T) then else", IFTHENELSE(TRUE)(TRUE)(FALSE))
+REFUTE("if (F) then else", IFTHENELSE(FALSE)(TRUE)(FALSE))
 
 ASSERT("and (T T)", AND(TRUE)(TRUE))
 REFUTE("and (T F)", AND(TRUE)(FALSE))
@@ -77,10 +77,11 @@ print("-----------------")
  8. For every natural number n, S(n) = 0 is false. That is no natural number whose successor is 0.
  */
 
-let ZERO = TRUE
-let IS_ZERO: OneArgF = { $0 }
+let ZERO    = TRUE
+
+let IS_ZERO:    OneArgF = { $0 }
 let IS_NATURAL: OneArgF = { $0 }
-let EQUALS: TwoArgF = { x in { y in AND(x)(y) } }
+let EQUALS:     TwoArgF = { x in { y in AND(x)(y) } }
 
 ASSERT("zero", ZERO)
 ASSERT("zero is zero", IS_ZERO(ZERO))
