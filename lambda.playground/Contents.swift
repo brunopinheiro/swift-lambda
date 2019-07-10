@@ -77,23 +77,30 @@ print("-----------------")
  8. For every natural number n, S(n) = 0 is false. That is no natural number whose successor is 0.
  */
 
-let ZERO    = TRUE
-
-let IS_ZERO:      OneArgF = { $0 }
-let IS_NATURAL:   OneArgF = { _ in ZERO }
-let EQUALS:       TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(NOT(IS_ZERO(y))) } }
-let SUCCESSOR:    OneArgF = { _ in FALSE }
-let PREDECESSOR:  OneArgF = { _ in FALSE }
 let LIST:         TwoArgF = { head in { tail in .function { x in x.eval(head).eval(tail) } } }
 let HEAD:         OneArgF = { $0.eval(TRUE) }
 let TAIL:         OneArgF = { $0.eval(FALSE) }
+
+let ZERO    = LIST(TRUE)(IDENTITY)
+
+let IS_ZERO:      OneArgF = { HEAD($0) }
+let SUCCESSOR:    OneArgF = { n in LIST(FALSE)(n) }
+let PREDECESSOR:  OneArgF = { n in TAIL(n) }
+
+func EQUALS(_ x: Function) -> OneArgF {
+    return { y in
+        // lazy evaluation to avoid an infinity loop (.none is my flag)
+        let partialResult = IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(IFTHENELSE(IS_ZERO(y))(FALSE)(.none))
+        if case .none = partialResult { return EQUALS(PREDECESSOR(x))(PREDECESSOR(y)) }
+        return partialResult
+    }
+}
 
 let ONE = SUCCESSOR(ZERO)
 let TWO = SUCCESSOR(SUCCESSOR(ZERO))
 
 // 1. 0 is natural
 ASSERT("0", ZERO)
-ASSERT("0 is natural", IS_NATURAL(ZERO))
 ASSERT("0 is zero", IS_ZERO(ZERO))
 
 // 2. x = x
@@ -113,7 +120,7 @@ print("")
 REFUTE("there's no n where S(n) = 0", IS_ZERO(SUCCESSOR(ZERO)))
 
 print("\npredecessor")
-REFUTE("P(0)", PREDECESSOR(ZERO))
+REFUTE("P(0)", PREDECESSOR(ZERO).eval(FALSE))
 ASSERT("P(S(0)) = 0", IS_ZERO(PREDECESSOR(ONE)))
 ASSERT("P(S(n)) = n", EQUALS(PREDECESSOR(TWO))(ONE))
 
