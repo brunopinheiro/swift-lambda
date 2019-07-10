@@ -84,6 +84,9 @@ let IS_NATURAL:   OneArgF = { _ in ZERO }
 let EQUALS:       TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(NOT(IS_ZERO(y))) } }
 let SUCCESSOR:    OneArgF = { _ in FALSE }
 let PREDECESSOR:  OneArgF = { _ in FALSE }
+let LIST:         TwoArgF = { head in { tail in .function { x in x.eval(head).eval(tail) } } }
+let HEAD:         OneArgF = { $0.eval(TRUE) }
+let TAIL:         OneArgF = { $0.eval(FALSE) }
 
 let ONE = SUCCESSOR(ZERO)
 let TWO = SUCCESSOR(SUCCESSOR(ZERO))
@@ -114,3 +117,6 @@ REFUTE("P(0)", PREDECESSOR(ZERO))
 ASSERT("P(S(0)) = 0", IS_ZERO(PREDECESSOR(ONE)))
 ASSERT("P(S(n)) = n", EQUALS(PREDECESSOR(TWO))(ONE))
 
+print("\nlist / head / tail")
+ASSERT("head", HEAD(LIST(TRUE)(FALSE)))
+ASSERT("tail", TAIL(LIST(FALSE)(TRUE)))
