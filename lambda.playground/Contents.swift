@@ -144,9 +144,6 @@ func ADD(_ x: Function) -> OneArgF {
     }
 }
 
-ASSERT("add (0 + 4 = 4)", EQUALS(.number(4))(ADD(ZERO)(.number(4))))
-ASSERT("add (3 + 4 = 7)", EQUALS(.number(7))(ADD(.number(3))(.number(4))))
-
 func SUBTRACT(_ x: Function) -> OneArgF {
     return { y in
         let partialResult = IFTHENELSE(IS_ZERO(y))(x)((IFTHENELSE(IS_ZERO(x))(ZERO)(.none)))
@@ -154,10 +151,6 @@ func SUBTRACT(_ x: Function) -> OneArgF {
         return partialResult
     }
 }
-
-ASSERT("subtract (3 - 0 = 3)", EQUALS(.number(3))(SUBTRACT(.number(3))(ZERO)))
-ASSERT("subtract (5 - 3 = 2)", EQUALS(.number(2))(SUBTRACT(.number(5))(.number(3))))
-ASSERT("subtract (3 - 5 = 0) uint", EQUALS(ZERO)(SUBTRACT(.number(3))(.number(5))))
 
 func TIMES(_ x: Function) -> OneArgF {
     return { y in
@@ -167,5 +160,25 @@ func TIMES(_ x: Function) -> OneArgF {
     }
 }
 
-ASSERT("times (2 * 3 = 6)", EQUALS(.number(6))(TIMES(.number(2))(.number(3))))
-ASSERT("times (4 * 0 = 0)", EQUALS(ZERO)(TIMES(.number(4))(ZERO)))
+ASSERT("0 + 4 = 4", EQUALS(.number(4))(ADD(ZERO)(.number(4))))
+ASSERT("3 + 4 = 7", EQUALS(.number(7))(ADD(.number(3))(.number(4))))
+ASSERT("4 + 3 = 7", EQUALS(.number(7))(ADD(.number(4))(.number(3))))
+ASSERT("3 - 0 = 3", EQUALS(.number(3))(SUBTRACT(.number(3))(ZERO)))
+ASSERT("5 - 3 = 2", EQUALS(.number(2))(SUBTRACT(.number(5))(.number(3))))
+ASSERT("3 - 5 = 0 uint", EQUALS(ZERO)(SUBTRACT(.number(3))(.number(5))))
+ASSERT("2 * 3 = 6", EQUALS(.number(6))(TIMES(.number(2))(.number(3))))
+ASSERT("3 * 2 = 6", EQUALS(.number(6))(TIMES(.number(3))(.number(2))))
+ASSERT("0 * 4 = 0", EQUALS(ZERO)(TIMES(ZERO)(.number(4))))
+ASSERT("4 * 0 = 0", EQUALS(ZERO)(TIMES(.number(4))(ZERO)))
+
+print("\n# comparison")
+
+let GREATER_THAN: TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(FALSE)(NOT(IS_ZERO(SUBTRACT(x)(y)))) } }
+let LESS_THAN: TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(NOT(IS_ZERO(y)))(IFTHENELSE(EQUALS(x)(y))(FALSE)(IS_ZERO(SUBTRACT(x)(y)))) } }
+
+ASSERT("4 > 2", GREATER_THAN(.number(4))(.number(2)))
+REFUTE("! 2 > 4", GREATER_THAN(.number(2))(.number(4)))
+REFUTE("! 3 > 3", GREATER_THAN(.number(3))(.number(3)))
+ASSERT("3 < 7", LESS_THAN(.number(3))(.number(7)))
+REFUTE("! 7 < 3", LESS_THAN(.number(7))(.number(3)))
+REFUTE("! 1 < 1", LESS_THAN(.number(1))(.number(1)))
