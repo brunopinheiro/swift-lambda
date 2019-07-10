@@ -36,7 +36,7 @@ let OR:         TwoArgF     = { x in { y in x.eval(x).eval(y) } }
 let NOT:        OneArgF     = { x in x.eval(FALSE).eval(TRUE) }
 let XOR:        TwoArgF     = { x in { y in x.eval(NOT(y)).eval(y) } }
 
-
+print("# logical operators")
 ASSERT("identity", IDENTITY)
 
 ASSERT("true", TRUE)
@@ -63,7 +63,29 @@ ASSERT("xor (T F)", XOR(TRUE)(FALSE))
 ASSERT("xor (F T)", XOR(FALSE)(TRUE))
 REFUTE("xor (F F)", XOR(FALSE)(FALSE))
 
-print("-----------------")
+print("\n# natural numbers")
+let LIST:         TwoArgF = { head in { tail in .function { x in x.eval(head).eval(tail) } } }
+let HEAD:         OneArgF = { $0.eval(TRUE) }
+let TAIL:         OneArgF = { $0.eval(FALSE) }
+
+let ZERO    = LIST(TRUE)(IDENTITY)
+
+let IS_ZERO:      OneArgF = { HEAD($0) }
+let SUCCESSOR:    OneArgF = { n in LIST(FALSE)(n) }
+let PREDECESSOR:  OneArgF = { n in TAIL(n) }
+
+// recurssion workaround
+func EQUALS(_ x: Function) -> OneArgF {
+    return { y in
+        // lazy evaluation to avoid an infinity loop (.none is the flag)
+        let partialResult = IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(IFTHENELSE(IS_ZERO(y))(FALSE)(.none))
+        if case .none = partialResult { return EQUALS(PREDECESSOR(x))(PREDECESSOR(y)) }
+        return partialResult
+    }
+}
+
+let one = SUCCESSOR(ZERO)
+let two = SUCCESSOR(SUCCESSOR(ZERO))
 
 /*
  PEANO AXIOMS
@@ -77,28 +99,6 @@ print("-----------------")
  8. For every natural number n, S(n) = 0 is false. That is no natural number whose successor is 0.
  */
 
-let LIST:         TwoArgF = { head in { tail in .function { x in x.eval(head).eval(tail) } } }
-let HEAD:         OneArgF = { $0.eval(TRUE) }
-let TAIL:         OneArgF = { $0.eval(FALSE) }
-
-let ZERO    = LIST(TRUE)(IDENTITY)
-
-let IS_ZERO:      OneArgF = { HEAD($0) }
-let SUCCESSOR:    OneArgF = { n in LIST(FALSE)(n) }
-let PREDECESSOR:  OneArgF = { n in TAIL(n) }
-
-func EQUALS(_ x: Function) -> OneArgF {
-    return { y in
-        // lazy evaluation to avoid an infinity loop (.none is my flag)
-        let partialResult = IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(IFTHENELSE(IS_ZERO(y))(FALSE)(.none))
-        if case .none = partialResult { return EQUALS(PREDECESSOR(x))(PREDECESSOR(y)) }
-        return partialResult
-    }
-}
-
-let ONE = SUCCESSOR(ZERO)
-let TWO = SUCCESSOR(SUCCESSOR(ZERO))
-
 // 1. 0 is natural
 ASSERT("0", ZERO)
 ASSERT("0 is zero", IS_ZERO(ZERO))
@@ -107,23 +107,23 @@ ASSERT("0 is zero", IS_ZERO(ZERO))
 ASSERT("x = x", EQUALS(ZERO)(ZERO))
 
 // 2. x = x
-// 7. m = n if and only if S(m) = S(n)
-print("\nm = n iff S(m) = S(n)")
-ASSERT("S(n) = S(n)", EQUALS(ONE)(ONE))
-REFUTE("S(n) != n", EQUALS(ONE)(ZERO))
-ASSERT("S(S(n)) = S(S(n))", EQUALS(TWO)(TWO))
-REFUTE("S(S(n)) != S(n)", EQUALS(TWO)(ONE))
-REFUTE("S(S(n)) != n", EQUALS(TWO)(ZERO))
-
-// 8. there's no n which S(n) = 0
-print("")
-REFUTE("there's no n where S(n) = 0", IS_ZERO(SUCCESSOR(ZERO)))
-
-print("\npredecessor")
+// 7. m = n iff S(m) = S(n)
+ASSERT("S(n) = S(n)", EQUALS(one)(one))
+REFUTE("S(n) = 0", IS_ZERO(SUCCESSOR(ZERO)))
+REFUTE("S(0) != 0", EQUALS(one)(ZERO))
+REFUTE("S(n) != n", EQUALS(one)(two))
+ASSERT("S(S(n)) = S(S(n))", EQUALS(two)(two))
+REFUTE("S(S(n)) != S(n)", EQUALS(two)(one))
+REFUTE("S(S(n)) != n", EQUALS(two)(ZERO))
 REFUTE("P(0)", PREDECESSOR(ZERO).eval(FALSE))
-ASSERT("P(S(0)) = 0", IS_ZERO(PREDECESSOR(ONE)))
-ASSERT("P(S(n)) = n", EQUALS(PREDECESSOR(TWO))(ONE))
+ASSERT("P(S(0)) = 0", IS_ZERO(PREDECESSOR(one)))
+ASSERT("P(S(n)) = n", EQUALS(PREDECESSOR(two))(one))
 
-print("\nlist / head / tail")
-ASSERT("head", HEAD(LIST(TRUE)(FALSE)))
-ASSERT("tail", TAIL(LIST(FALSE)(TRUE)))
+// 3. x = y -> y = x
+let x = SUCCESSOR(ZERO)
+let y = PREDECESSOR(SUCCESSOR(SUCCESSOR(ZERO)))
+ASSERT("x = y, y = x", AND(EQUALS(x)(y))(EQUALS(y)(x)))
+
+// 4. x = y, y = z -> x = z
+let z = PREDECESSOR(SUCCESSOR(PREDECESSOR(SUCCESSOR(SUCCESSOR(ZERO)))))
+ASSERT("x = y, y = z, x = z", AND(AND(EQUALS(x)(y))(EQUALS(y)(z)))(EQUALS(x)(z)))
