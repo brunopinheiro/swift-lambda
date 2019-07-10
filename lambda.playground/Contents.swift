@@ -78,10 +78,12 @@ print("-----------------")
  */
 
 let ZERO = TRUE
+let IS_ZERO: OneArgF = { $0 }
 let IS_NATURAL: OneArgF = { $0 }
 let EQUALS: TwoArgF = { x in { y in AND(x)(y) } }
 
 ASSERT("zero", ZERO)
+ASSERT("zero is zero", IS_ZERO(ZERO))
 ASSERT("zero is natural", IS_NATURAL(ZERO))
 ASSERT("equals (T)", EQUALS(ZERO)(ZERO))
 
