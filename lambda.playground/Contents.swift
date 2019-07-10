@@ -127,3 +127,45 @@ ASSERT("x = y, y = x", AND(EQUALS(x)(y))(EQUALS(y)(x)))
 // 4. x = y, y = z -> x = z
 let z = PREDECESSOR(SUCCESSOR(PREDECESSOR(SUCCESSOR(SUCCESSOR(ZERO)))))
 ASSERT("x = y, y = z, x = z", AND(AND(EQUALS(x)(y))(EQUALS(y)(z)))(EQUALS(x)(z)))
+
+print("\n# math operators (- division)")
+
+extension Function {
+    static func number(_ value: UInt) -> Function {
+        return value == 0 ? ZERO : SUCCESSOR(number(value - 1))
+    }
+}
+
+func ADD(_ x: Function) -> OneArgF {
+    return { y in
+        let partialResult = IFTHENELSE(IS_ZERO(x))(y)(.none)
+        if case .none = partialResult { return ADD(PREDECESSOR(x))(SUCCESSOR(y)) }
+        return partialResult
+    }
+}
+
+ASSERT("add (0 + 4 = 4)", EQUALS(.number(4))(ADD(ZERO)(.number(4))))
+ASSERT("add (3 + 4 = 7)", EQUALS(.number(7))(ADD(.number(3))(.number(4))))
+
+func SUBTRACT(_ x: Function) -> OneArgF {
+    return { y in
+        let partialResult = IFTHENELSE(IS_ZERO(y))(x)((IFTHENELSE(IS_ZERO(x))(ZERO)(.none)))
+        if case .none = partialResult { return SUBTRACT(PREDECESSOR(x))(PREDECESSOR(y)) }
+        return partialResult
+    }
+}
+
+ASSERT("subtract (3 - 0 = 3)", EQUALS(.number(3))(SUBTRACT(.number(3))(ZERO)))
+ASSERT("subtract (5 - 3 = 2)", EQUALS(.number(2))(SUBTRACT(.number(5))(.number(3))))
+ASSERT("subtract (3 - 5 = 0) uint", EQUALS(ZERO)(SUBTRACT(.number(3))(.number(5))))
+
+func TIMES(_ x: Function) -> OneArgF {
+    return { y in
+        let partialResult = IFTHENELSE(IS_ZERO(x))(ZERO)((IFTHENELSE(IS_ZERO(y))(ZERO)(.none)))
+        if case .none = partialResult { return ADD(x)(TIMES(x)(PREDECESSOR(y))) }
+        return partialResult
+    }
+}
+
+ASSERT("times (2 * 3 = 6)", EQUALS(.number(6))(TIMES(.number(2))(.number(3))))
+ASSERT("times (4 * 0 = 0)", EQUALS(ZERO)(TIMES(.number(4))(ZERO)))
