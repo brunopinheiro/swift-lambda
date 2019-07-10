@@ -20,8 +20,8 @@ enum Function {
 
 typealias Assertion = (String, Function) -> Void
 
-let assertTrue: Assertion   = { (id, statement) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
-let assertFalse: Assertion  = { (id, statement) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
+let ASSERT: Assertion  = { (id, statement) in statement.eval(.literal("[√] \(id)")).eval(.literal("[X] \(id)")).eval() }
+let REFUTE: Assertion  = { (id, statement) in statement.eval(.literal("[X] \(id)")).eval(.literal("[√] \(id)")).eval() }
 
 let IDENTITY    = Function.function { $0 }
 let TRUE        = Function.function { x in .function { _ in x } }
@@ -37,31 +37,31 @@ let OR: TwoArgF             = { x in { y in x.eval(x).eval(y) } }
 let NOT: OneArgF            = { x in x.eval(FALSE).eval(TRUE) }
 let XOR: TwoArgF            = { x in { y in x.eval(NOT(y)).eval(y) } }
 
-assertTrue("identity", IDENTITY)
+ASSERT("identity", IDENTITY)
 
-assertTrue("true", TRUE)
-assertFalse("false", FALSE)
+ASSERT("true", TRUE)
+REFUTE("false", FALSE)
 
-assertTrue("if then else (T)", IFTHENELSE(TRUE)(TRUE)(FALSE))
-assertFalse("if then else (F)", IFTHENELSE(FALSE)(TRUE)(FALSE))
+ASSERT("if then else (T)", IFTHENELSE(TRUE)(TRUE)(FALSE))
+REFUTE("if then else (F)", IFTHENELSE(FALSE)(TRUE)(FALSE))
 
-assertTrue("and (T T)", AND(TRUE)(TRUE))
-assertFalse("and (T F)", AND(TRUE)(FALSE))
-assertFalse("and (F T)", AND(FALSE)(TRUE))
-assertFalse("and (F F)", AND(FALSE)(FALSE))
+ASSERT("and (T T)", AND(TRUE)(TRUE))
+REFUTE("and (T F)", AND(TRUE)(FALSE))
+REFUTE("and (F T)", AND(FALSE)(TRUE))
+REFUTE("and (F F)", AND(FALSE)(FALSE))
 
-assertTrue("or (T T)", OR(TRUE)(TRUE))
-assertTrue("or (T F)", OR(TRUE)(FALSE))
-assertTrue("or (F T)", OR(FALSE)(TRUE))
-assertFalse("or (F F)", OR(FALSE)(FALSE))
+ASSERT("or (T T)", OR(TRUE)(TRUE))
+ASSERT("or (T F)", OR(TRUE)(FALSE))
+ASSERT("or (F T)", OR(FALSE)(TRUE))
+REFUTE("or (F F)", OR(FALSE)(FALSE))
 
-assertFalse("not (T)", NOT(TRUE))
-assertTrue("not (F)", NOT(FALSE))
+REFUTE("not (T)", NOT(TRUE))
+ASSERT("not (F)", NOT(FALSE))
 
-assertFalse("xor (T T)", XOR(TRUE)(TRUE))
-assertTrue("xor (T F)", XOR(TRUE)(FALSE))
-assertTrue("xor (F T)", XOR(FALSE)(TRUE))
-assertFalse("xor (F F)", XOR(FALSE)(FALSE))
+REFUTE("xor (T T)", XOR(TRUE)(TRUE))
+ASSERT("xor (T F)", XOR(TRUE)(FALSE))
+ASSERT("xor (F T)", XOR(FALSE)(TRUE))
+REFUTE("xor (F F)", XOR(FALSE)(FALSE))
 
 print("-----------------")
 
@@ -79,7 +79,9 @@ print("-----------------")
 
 let ZERO = TRUE
 let IS_NATURAL: OneArgF = { $0 }
+let EQUALS: TwoArgF = { x in { y in AND(x)(y) } }
 
-assertTrue("zero", ZERO)
-assertTrue("zero is natural", IS_NATURAL(ZERO))
+ASSERT("zero", ZERO)
+ASSERT("zero is natural", IS_NATURAL(ZERO))
+ASSERT("equals (T)", EQUALS(ZERO)(ZERO))
 
