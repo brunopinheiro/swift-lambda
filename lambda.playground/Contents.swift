@@ -79,10 +79,11 @@ print("-----------------")
 
 let ZERO    = TRUE
 
-let IS_ZERO:    OneArgF = { $0 }
-let IS_NATURAL: OneArgF = { _ in ZERO }
-let EQUALS:     TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(NOT(IS_ZERO(y))) } }
-let SUCCESSOR:  OneArgF = { _ in FALSE }
+let IS_ZERO:      OneArgF = { $0 }
+let IS_NATURAL:   OneArgF = { _ in ZERO }
+let EQUALS:       TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(NOT(IS_ZERO(y))) } }
+let SUCCESSOR:    OneArgF = { _ in FALSE }
+let PREDECESSOR:  OneArgF = { _ in FALSE }
 
 let ONE = SUCCESSOR(ZERO)
 let TWO = SUCCESSOR(SUCCESSOR(ZERO))
@@ -107,3 +108,9 @@ REFUTE("S(S(n)) != n", EQUALS(TWO)(ZERO))
 // 8. there's no n which S(n) = 0
 print("")
 REFUTE("there's no n where S(n) = 0", IS_ZERO(SUCCESSOR(ZERO)))
+
+print("\npredecessor")
+REFUTE("P(0)", PREDECESSOR(ZERO))
+ASSERT("P(S(0)) = 0", IS_ZERO(PREDECESSOR(ONE)))
+ASSERT("P(S(n)) = n", EQUALS(PREDECESSOR(TWO))(ONE))
+
