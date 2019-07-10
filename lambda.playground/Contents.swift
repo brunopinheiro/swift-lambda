@@ -84,6 +84,9 @@ let IS_NATURAL: OneArgF = { _ in ZERO }
 let EQUALS:     TwoArgF = { x in { y in IFTHENELSE(IS_ZERO(x))(IS_ZERO(y))(NOT(IS_ZERO(y))) } }
 let SUCCESSOR:  OneArgF = { _ in FALSE }
 
+let ONE = SUCCESSOR(ZERO)
+let TWO = SUCCESSOR(SUCCESSOR(ZERO))
+
 // 1. 0 is natural
 ASSERT("0", ZERO)
 ASSERT("0 is natural", IS_NATURAL(ZERO))
@@ -94,8 +97,13 @@ ASSERT("x = x", EQUALS(ZERO)(ZERO))
 
 // 2. x = x
 // 7. m = n if and only if S(m) = S(n)
-ASSERT("m = n, then S(m) = S(n)", EQUALS(SUCCESSOR(ZERO))(SUCCESSOR(ZERO)))
-REFUTE("m = n, then S(m) != n", EQUALS(SUCCESSOR(ZERO))(ZERO))
+print("\nm = n iff S(m) = S(n)")
+ASSERT("S(n) = S(n)", EQUALS(ONE)(ONE))
+REFUTE("S(n) != n", EQUALS(ONE)(ZERO))
+ASSERT("S(S(n)) = S(S(n))", EQUALS(TWO)(TWO))
+REFUTE("S(S(n)) != S(n)", EQUALS(TWO)(ONE))
+REFUTE("S(S(n)) != n", EQUALS(TWO)(ZERO))
 
 // 8. there's no n which S(n) = 0
+print("")
 REFUTE("there's no n where S(n) = 0", IS_ZERO(SUCCESSOR(ZERO)))
